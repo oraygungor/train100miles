@@ -46,7 +46,7 @@
         <div class="relative w-full aspect-[16/9] md:aspect-[21/9] lg:h-[450px]">
             <canvas id="trainChart" class="w-full h-full rounded-2xl"></canvas>
             
-            <!-- Minimal Legend (Top Left) -->
+            <!-- Minimal Legend (Moved to Right) -->
             <div class="absolute top-60 right-20 bg-white/90 backdrop-blur text-xs p-3 rounded-lg border border-slate-100 shadow-sm flex flex-col gap-2">
                 <div class="flex items-center gap-2">
                     <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span> 
@@ -54,9 +54,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> 
-                    <span class="font-medium text-slate-600">
-                        Total Avg: <span id="legendAvg" class="font-bold text-red-600 text-sm ml-1">100.0</span> mph
-                    </span>
+                    <span class="font-medium text-slate-600">Total Avg Speed</span>
                 </div>
             </div>
         </div>
@@ -83,7 +81,6 @@
         const ctx = canvas.getContext('2d');
         const varianceSlider = document.getElementById('varianceSlider');
         const varianceVal = document.getElementById('varianceVal');
-        const legendAvg = document.getElementById('legendAvg');
 
         // Logic Setup
         let sliderValue = 0;
@@ -265,6 +262,7 @@
 
                 // --- DYNAMIC LABELS ---
                 const v = getVelocity(tStart);
+                const totalAvg = dTotal / tTotal;
                 const centerX = (xS + xE) / 2;
 
                 // A. Instant Velocity (TOP, Blue)
@@ -275,18 +273,14 @@
                 ctx.fillText(`v = ${v.toFixed(0)} mph`, centerX, yE - 12); // yE is top edge visually
                 ctx.restore();
 
-                // B. Interval Rule (BOTTOM, Greenish to match box)
+                // B. Total Avg Speed (BOTTOM, Red) - Replaces 1h Rule
                 ctx.save();
-                ctx.fillStyle = '#059669'; // Green to match box
+                ctx.fillStyle = '#DC2626'; // Red
                 ctx.font = 'bold 13px Inter';
                 ctx.textAlign = 'center';
-                ctx.fillText(`1h Rule: 100 mph`, centerX, yS + 20); // yS is bottom edge visually
+                ctx.fillText(`Total Avg: ${totalAvg.toFixed(1)} mph`, centerX, yS + 20); // yS is bottom edge visually
                 ctx.restore();
             }
-
-            // --- UPDATE LEGEND AVG SPEED ---
-            const totalAvg = dTotal / tTotal;
-            legendAvg.innerText = totalAvg.toFixed(1);
         }
 
         function loop() {
