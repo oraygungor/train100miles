@@ -111,11 +111,11 @@
                         </div>
                     </div>
 
-                    <!-- Instant Speed -->
-                    <div>
+                    <!-- Instant Speed (Now mainly on graph) -->
+                    <div class="opacity-50 grayscale">
                         <span class="text-[10px] font-bold text-blue-500 uppercase tracking-wider block mb-1">Instant Velocity</span>
                         <div class="text-xl font-bold text-blue-600">
-                            <span id="instSpeedDisplay">100.0</span> <span class="text-xs font-normal text-blue-400">mph</span>
+                            <span id="instSpeedDisplay">--</span> <span class="text-xs font-normal text-blue-400">mph</span>
                         </div>
                     </div>
                 </div>
@@ -150,14 +150,11 @@
         resize();
 
         // Math Constants
-        const margin = { top: 30, right: 30, bottom: 30, left: 60 }; // Increased left margin for Y-axis text
+        const margin = { top: 30, right: 30, bottom: 30, left: 60 }; 
         const maxTime = 5.5; 
         const maxDist = 600; 
 
         // Physics Functions
-        // v(t) = 100 + A * sin(2*PI*t)
-        // d(t) = 100t + (A/2PI) * (1 - cos(2*PI*t))
-        
         function getAmplitude() { return sliderValue * 0.98; }
 
         function getDistance(t) {
@@ -221,7 +218,7 @@
             ctx.stroke();
             ctx.setLineDash([]);
 
-            // 2b. End Point Markers (Distance at 5.5h)
+            // 2b. End Point Markers
             const xFinalMark = scaleX(tTotal);
             const yFinalMark = scaleY(dTotal);
 
@@ -230,17 +227,15 @@
             ctx.lineWidth = 1;
             ctx.setLineDash([4, 4]);
             
-            // Horizontal line to Y-axis
             ctx.moveTo(xFinalMark, yFinalMark);
             ctx.lineTo(margin.left, yFinalMark);
             
-            // Vertical line to X-axis
             ctx.moveTo(xFinalMark, yFinalMark);
             ctx.lineTo(xFinalMark, h - margin.bottom);
             ctx.stroke();
             ctx.setLineDash([]);
 
-            // Red Dot at 5.5h
+            // Red Dot
             ctx.beginPath();
             ctx.fillStyle = '#DC2626';
             ctx.arc(xFinalMark, yFinalMark, 4, 0, Math.PI * 2);
@@ -251,15 +246,11 @@
             ctx.font = 'bold 12px Inter';
             ctx.textAlign = 'right';
             ctx.textBaseline = 'middle';
-            
-            // Background box for text clarity
             const text = dTotal.toFixed(1);
             const textWidth = ctx.measureText(text).width;
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'; // Slightly transparent white
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'; 
             ctx.fillRect(margin.left - 15 - textWidth, yFinalMark - 8, textWidth + 10, 16);
-            
-            // Text
-            ctx.fillStyle = '#DC2626'; // Red
+            ctx.fillStyle = '#DC2626'; 
             ctx.fillText(text, margin.left - 10, yFinalMark);
             ctx.restore();
 
@@ -278,7 +269,6 @@
             ctx.stroke();
 
             // 4. Scanner (Green Box)
-            // Scanner represents exactly 1 hour width and 100 miles height
             const tStart = scannerT;
             const tEnd = scannerT + 1;
             
@@ -286,7 +276,7 @@
                 const xS = scaleX(tStart);
                 const xE = scaleX(tEnd);
                 const yS = scaleY(getDistance(tStart));
-                const yE = scaleY(getDistance(tEnd));
+                const yE = scaleY(getDistance(tEnd)); // Note: yE is vertically higher (smaller val) than yS because dEnd > dStart
 
                 // Fill Box
                 ctx.fillStyle = 'rgba(16, 185, 129, 0.1)'; 
@@ -302,11 +292,11 @@
                 ctx.fill();
                 ctx.stroke();
 
-                // Scanner Labels
+                // Scanner Labels (Delta)
                 ctx.fillStyle = '#059669';
                 ctx.font = 'bold 10px Inter';
                 ctx.textAlign = 'center';
-                ctx.fillText("Δt=1h", (xS+xE)/2, yE - 8);
+                ctx.fillText("Δt=1h", (xS+xE)/2, yE - 25); // Moved up slightly to make room for velocity
                 ctx.textAlign = 'left';
                 ctx.fillText("Δd=100mi", xE + 4, (yS+yE)/2);
 
@@ -316,8 +306,17 @@
                 ctx.arc(xS, yS, 5, 0, Math.PI*2);
                 ctx.fill();
 
-                // UPDATE INSTANT VELOCITY
+                // UPDATE INSTANT VELOCITY ON GRAPH
                 const v = getVelocity(tStart);
+                
+                ctx.save();
+                ctx.fillStyle = '#2563EB'; // Blue to match velocity
+                ctx.font = 'bold 12px Inter';
+                ctx.textAlign = 'center';
+                // Place above the box (yE is the top edge)
+                ctx.fillText(`v = ${v.toFixed(0)} mph`, (xS+xE)/2, yE - 10);
+                ctx.restore();
+
                 instSpeedDisplay.innerText = v.toFixed(0);
             }
 
@@ -327,27 +326,20 @@
             
             // Logic Check
             if (Math.abs(sliderValue) > 0) {
-                // Paradox is active (Velocity not constant)
                 ansA.innerText = "NO";
                 ansA.className = "text-sm font-bold bg-red-100 text-red-600 px-3 py-1 rounded";
-                
                 ansB.innerText = "NO";
                 ansB.className = "text-sm font-bold bg-red-100 text-red-600 px-3 py-1 rounded";
-
                 avgSpeedDisplay.className = "text-red-600";
             } else {
-                // Uniform motion
                 ansA.innerText = "YES";
                 ansA.className = "text-sm font-bold bg-green-100 text-green-600 px-3 py-1 rounded";
-                
                 ansB.innerText = "YES";
                 ansB.className = "text-sm font-bold bg-green-100 text-green-600 px-3 py-1 rounded";
-                
                 avgSpeedDisplay.className = "text-slate-900";
             }
         }
 
-        // Loop
         function loop() {
             if (isScannerAnimating) {
                 scannerT += 0.005;
@@ -357,7 +349,6 @@
             requestAnimationFrame(loop);
         }
 
-        // Listeners
         varianceSlider.addEventListener('input', (e) => {
             sliderValue = parseFloat(e.target.value);
             varianceVal.innerText = Math.abs(sliderValue) + "%";
