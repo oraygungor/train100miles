@@ -54,7 +54,9 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> 
-                    <span class="font-medium text-slate-600">Avg Speed (Total)</span>
+                    <span class="font-medium text-slate-600">
+                        Total Avg: <span id="legendAvg" class="font-bold text-red-600 text-sm ml-1">100.0</span> mph
+                    </span>
                 </div>
             </div>
         </div>
@@ -81,6 +83,7 @@
         const ctx = canvas.getContext('2d');
         const varianceSlider = document.getElementById('varianceSlider');
         const varianceVal = document.getElementById('varianceVal');
+        const legendAvg = document.getElementById('legendAvg');
 
         // Logic Setup
         let sliderValue = 0;
@@ -272,14 +275,18 @@
                 ctx.fillText(`v = ${v.toFixed(0)} mph`, centerX, yE - 12); // yE is top edge visually
                 ctx.restore();
 
-                // B. Interval Average (BOTTOM, Red)
+                // B. Interval Rule (BOTTOM, Greenish to match box)
                 ctx.save();
-                ctx.fillStyle = '#DC2626'; // Red
+                ctx.fillStyle = '#059669'; // Green to match box
                 ctx.font = 'bold 13px Inter';
                 ctx.textAlign = 'center';
-                ctx.fillText(`Interval Avg: 100 mph`, centerX, yS + 20); // yS is bottom edge visually
+                ctx.fillText(`1h Rule: 100 mph`, centerX, yS + 20); // yS is bottom edge visually
                 ctx.restore();
             }
+
+            // --- UPDATE LEGEND AVG SPEED ---
+            const totalAvg = dTotal / tTotal;
+            legendAvg.innerText = totalAvg.toFixed(1);
         }
 
         function loop() {
