@@ -45,8 +45,8 @@
         <div class="relative w-full aspect-[16/9] md:aspect-[21/9] lg:h-[400px]">
             <canvas id="trainChart" class="w-full h-full rounded-xl"></canvas>
             
-            <!-- Minimal Legend -->
-            <div class="absolute top-4 left-14 bg-white/80 backdrop-blur text-[10px] md:text-xs p-2 rounded border border-gray-200 shadow-sm">
+            <!-- Minimal Legend (Moved Down) -->
+            <div class="absolute top-16 left-14 bg-white/80 backdrop-blur text-[10px] md:text-xs p-2 rounded border border-gray-200 shadow-sm">
                 <div class="flex items-center gap-2 mb-1">
                     <span class="w-2 h-2 rounded-full bg-blue-600"></span> Actual Path
                 </div>
@@ -101,11 +101,22 @@
                     </div>
                 </div>
 
-                <!-- Real Average Speed -->
-                <div class="flex justify-between items-center pt-1">
-                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Actual Avg Speed</span>
-                    <div class="text-2xl font-bold text-slate-900">
-                        <span id="avgSpeedDisplay">100.0</span> <span class="text-sm font-normal text-slate-500">mph</span>
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-2 gap-4 pt-1">
+                    <!-- Real Average Speed -->
+                    <div>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Avg Speed (Total)</span>
+                        <div class="text-xl font-bold text-slate-900">
+                            <span id="avgSpeedDisplay">100.0</span> <span class="text-xs font-normal text-slate-500">mph</span>
+                        </div>
+                    </div>
+
+                    <!-- Instant Speed -->
+                    <div>
+                        <span class="text-[10px] font-bold text-blue-500 uppercase tracking-wider block mb-1">Instant Velocity</span>
+                        <div class="text-xl font-bold text-blue-600">
+                            <span id="instSpeedDisplay">100.0</span> <span class="text-xs font-normal text-blue-400">mph</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -119,6 +130,7 @@
         const varianceSlider = document.getElementById('varianceSlider');
         const varianceVal = document.getElementById('varianceVal');
         const avgSpeedDisplay = document.getElementById('avgSpeedDisplay');
+        const instSpeedDisplay = document.getElementById('instSpeedDisplay');
         const ansA = document.getElementById('ansA');
         const ansB = document.getElementById('ansB');
         const toggleBtn = document.getElementById('toggleScannerBtn');
@@ -138,7 +150,7 @@
         resize();
 
         // Math Constants
-        const margin = { top: 30, right: 30, bottom: 30, left: 50 };
+        const margin = { top: 30, right: 30, bottom: 30, left: 60 }; // Increased left margin for Y-axis text
         const maxTime = 5.5; 
         const maxDist = 600; 
 
@@ -209,6 +221,48 @@
             ctx.stroke();
             ctx.setLineDash([]);
 
+            // 2b. End Point Markers (Distance at 5.5h)
+            const xFinalMark = scaleX(tTotal);
+            const yFinalMark = scaleY(dTotal);
+
+            ctx.beginPath();
+            ctx.strokeStyle = '#DC2626'; 
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 4]);
+            
+            // Horizontal line to Y-axis
+            ctx.moveTo(xFinalMark, yFinalMark);
+            ctx.lineTo(margin.left, yFinalMark);
+            
+            // Vertical line to X-axis
+            ctx.moveTo(xFinalMark, yFinalMark);
+            ctx.lineTo(xFinalMark, h - margin.bottom);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Red Dot at 5.5h
+            ctx.beginPath();
+            ctx.fillStyle = '#DC2626';
+            ctx.arc(xFinalMark, yFinalMark, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Distance Label ON Y-AXIS
+            ctx.save();
+            ctx.font = 'bold 12px Inter';
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+            
+            // Background box for text clarity
+            const text = dTotal.toFixed(1);
+            const textWidth = ctx.measureText(text).width;
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'; // Slightly transparent white
+            ctx.fillRect(margin.left - 15 - textWidth, yFinalMark - 8, textWidth + 10, 16);
+            
+            // Text
+            ctx.fillStyle = '#DC2626'; // Red
+            ctx.fillText(text, margin.left - 10, yFinalMark);
+            ctx.restore();
+
             // 3. Actual Curve (Blue)
             ctx.beginPath();
             ctx.strokeStyle = '#2563EB'; 
@@ -261,6 +315,10 @@
                 ctx.fillStyle = '#2563EB';
                 ctx.arc(xS, yS, 5, 0, Math.PI*2);
                 ctx.fill();
+
+                // UPDATE INSTANT VELOCITY
+                const v = getVelocity(tStart);
+                instSpeedDisplay.innerText = v.toFixed(0);
             }
 
             // 5. Update DOM Logic
