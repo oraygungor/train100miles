@@ -15,12 +15,13 @@
         }
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            height: 16px;
-            width: 16px;
+            height: 20px;
+            width: 20px;
             border-radius: 50%;
             background: #2563EB;
-            margin-top: -6px;
+            margin-top: -8px;
             cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         input[type=range]::-webkit-slider-runnable-track {
             width: 100%;
@@ -30,98 +31,49 @@
         }
     </style>
 </head>
-<body class="bg-gray-50 text-slate-800 min-h-screen flex flex-col items-center py-10 px-4">
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col items-center py-12 px-4">
 
     <!-- Minimal Header -->
-    <div class="text-center mb-8">
-        <h1 class="text-3xl font-bold text-slate-900 tracking-tight">The Train Paradox</h1>
-        <p class="text-slate-500 mt-2 text-sm">Condition: Every 1-hour interval covers exactly 100 miles.</p>
+    <div class="text-center mb-10">
+        <h1 class="text-4xl font-bold text-slate-900 tracking-tight mb-2">The Train Paradox</h1>
+        <p class="text-slate-500 text-sm">Condition: <span class="font-semibold text-red-500">Every</span> 1-hour interval covers exactly 100 miles.</p>
     </div>
 
     <!-- Main Card -->
-    <div class="bg-white p-2 rounded-2xl shadow-lg border border-gray-100 max-w-4xl w-full">
+    <div class="bg-white p-4 rounded-3xl shadow-xl border border-slate-100 max-w-5xl w-full">
         
         <!-- Canvas Wrapper -->
-        <div class="relative w-full aspect-[16/9] md:aspect-[21/9] lg:h-[400px]">
-            <canvas id="trainChart" class="w-full h-full rounded-xl"></canvas>
+        <div class="relative w-full aspect-[16/9] md:aspect-[21/9] lg:h-[450px]">
+            <canvas id="trainChart" class="w-full h-full rounded-2xl"></canvas>
             
-            <!-- Minimal Legend (Moved Down) -->
-            <div class="absolute top-16 left-14 bg-white/80 backdrop-blur text-[10px] md:text-xs p-2 rounded border border-gray-200 shadow-sm">
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="w-2 h-2 rounded-full bg-blue-600"></span> Actual Path
+            <!-- Minimal Legend (Top Left) -->
+            <div class="absolute top-60 right-20 bg-white/90 backdrop-blur text-xs p-3 rounded-lg border border-slate-100 shadow-sm flex flex-col gap-2">
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span> 
+                    <span class="font-medium text-slate-600">Actual Path</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-red-500"></span> Avg Speed
+                    <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span> 
+                    <span class="font-medium text-slate-600">Avg Speed (Total)</span>
                 </div>
             </div>
         </div>
 
-        <!-- Controls & Results -->
-        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-8 items-center border-t border-gray-100 mt-2">
+        <!-- Single Control: Speed Variance -->
+        <div class="px-8 py-6 border-t border-slate-50 mt-2">
+            <div class="flex justify-between items-center mb-4">
+                <span class="font-bold text-slate-700">Speed Variance</span>
+                <span id="varianceVal" class="font-mono text-lg text-blue-600 font-bold">0%</span>
+            </div>
             
-            <!-- Left: Slider Control -->
-            <div>
-                <div class="flex justify-between text-sm font-semibold text-slate-700 mb-4">
-                    <span>Speed Variance</span>
-                    <span id="varianceVal" class="font-mono text-blue-600">0%</span>
-                </div>
-                <input type="range" id="varianceSlider" min="-100" max="100" value="0" step="1">
-                <div class="flex justify-between text-[10px] text-gray-400 mt-2 uppercase tracking-wide">
-                    <span>Constant Speed</span>
-                    <span>Variable Speed</span>
-                </div>
-                
-                <div class="mt-6 flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-100">
-                     <span class="text-xs font-bold text-slate-500 uppercase">Scanner</span>
-                     <button id="toggleScannerBtn" class="text-xs font-semibold bg-white border border-gray-300 px-3 py-1.5 rounded shadow-sm hover:bg-gray-50 transition">
-                        Pause
-                    </button>
-                </div>
+            <input type="range" id="varianceSlider" min="-100" max="100" value="0" step="1">
+            
+            <div class="flex justify-between text-xs text-slate-400 mt-3 font-medium tracking-wide uppercase">
+                <span>Constant Speed</span>
+                <span>Variable Speed</span>
             </div>
-
-            <!-- Right: The Answers -->
-            <div class="space-y-4">
-                <!-- Question A -->
-                <div class="flex justify-between items-center border-b border-gray-100 pb-3">
-                    <div class="text-sm text-slate-600 pr-4">
-                        (a) Is velocity necessarily constant?
-                    </div>
-                    <div id="ansA" class="text-sm font-bold bg-gray-100 text-gray-500 px-3 py-1 rounded">
-                        YES
-                    </div>
-                </div>
-
-                <!-- Question B -->
-                <div class="flex justify-between items-center border-b border-gray-100 pb-3">
-                    <div class="text-sm text-slate-600 pr-4">
-                        (b) Is avg speed necessarily 100 mph?
-                    </div>
-                    <div id="ansB" class="text-sm font-bold bg-gray-100 text-gray-500 px-3 py-1 rounded">
-                        YES
-                    </div>
-                </div>
-
-                <!-- Stats Grid -->
-                <div class="grid grid-cols-2 gap-4 pt-1">
-                    <!-- Real Average Speed -->
-                    <div>
-                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Avg Speed (Total)</span>
-                        <div class="text-xl font-bold text-slate-900">
-                            <span id="avgSpeedDisplay">100.0</span> <span class="text-xs font-normal text-slate-500">mph</span>
-                        </div>
-                    </div>
-
-                    <!-- Instant Speed (Now mainly on graph) -->
-                    <div class="opacity-50 grayscale">
-                        <span class="text-[10px] font-bold text-blue-500 uppercase tracking-wider block mb-1">Instant Velocity</span>
-                        <div class="text-xl font-bold text-blue-600">
-                            <span id="instSpeedDisplay">--</span> <span class="text-xs font-normal text-blue-400">mph</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
         </div>
+
     </div>
 
     <script>
@@ -129,16 +81,10 @@
         const ctx = canvas.getContext('2d');
         const varianceSlider = document.getElementById('varianceSlider');
         const varianceVal = document.getElementById('varianceVal');
-        const avgSpeedDisplay = document.getElementById('avgSpeedDisplay');
-        const instSpeedDisplay = document.getElementById('instSpeedDisplay');
-        const ansA = document.getElementById('ansA');
-        const ansB = document.getElementById('ansB');
-        const toggleBtn = document.getElementById('toggleScannerBtn');
 
         // Logic Setup
         let sliderValue = 0;
         let scannerT = 0; 
-        let isScannerAnimating = true;
         
         // Resize canvas for crisp rendering
         function resize() {
@@ -150,7 +96,7 @@
         resize();
 
         // Math Constants
-        const margin = { top: 30, right: 30, bottom: 30, left: 60 }; 
+        const margin = { top: 40, right: 40, bottom: 40, left: 60 }; 
         const maxTime = 5.5; 
         const maxDist = 600; 
 
@@ -180,10 +126,10 @@
             const scaleY = (d) => h - margin.bottom - (d / maxDist) * (h - margin.top - margin.bottom);
 
             // 1. Grid
-            ctx.strokeStyle = '#F3F4F6';
+            ctx.strokeStyle = '#F1F5F9';
             ctx.lineWidth = 1;
-            ctx.font = '10px Inter';
-            ctx.fillStyle = '#9CA3AF';
+            ctx.font = '11px Inter';
+            ctx.fillStyle = '#94A3B8';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
 
@@ -191,34 +137,34 @@
             for (let t = 0; t <= 5; t++) {
                 const x = scaleX(t);
                 ctx.beginPath(); ctx.moveTo(x, margin.top); ctx.lineTo(x, h - margin.bottom); ctx.stroke();
-                ctx.fillText(t + 'h', x, h - margin.bottom + 15);
+                ctx.fillText(t + 'h', x, h - margin.bottom + 20);
             }
             // 5.5h Mark
             const xFinal = scaleX(5.5);
             ctx.beginPath(); ctx.moveTo(xFinal, margin.top); ctx.lineTo(xFinal, h - margin.bottom); ctx.stroke();
-            ctx.fillText('5.5h', xFinal, h - margin.bottom + 15);
+            ctx.fillText('5.5h', xFinal, h - margin.bottom + 20);
 
             // Y Axis
             ctx.textAlign = 'right';
             for (let d = 0; d <= maxDist; d += 100) {
                 const y = scaleY(d);
                 ctx.beginPath(); ctx.moveTo(margin.left, y); ctx.lineTo(w - margin.right, y); ctx.stroke();
-                ctx.fillText(d, margin.left - 10, y);
+                ctx.fillText(d, margin.left - 12, y);
             }
 
-            // 2. Average Speed Line (Red)
+            // 2. Average Speed Line (Red - Dashed)
             const tTotal = 5.5;
             const dTotal = getDistance(tTotal);
             ctx.beginPath();
             ctx.strokeStyle = '#EF4444';
             ctx.lineWidth = 2;
-            ctx.setLineDash([4, 4]);
+            ctx.setLineDash([6, 6]);
             ctx.moveTo(scaleX(0), scaleY(0));
             ctx.lineTo(scaleX(tTotal), scaleY(dTotal));
             ctx.stroke();
             ctx.setLineDash([]);
 
-            // 2b. End Point Markers
+            // 2b. End Point Markers (Total Distance)
             const xFinalMark = scaleX(tTotal);
             const yFinalMark = scaleY(dTotal);
 
@@ -235,23 +181,30 @@
             ctx.stroke();
             ctx.setLineDash([]);
 
-            // Red Dot
+            // Red Dot at End
             ctx.beginPath();
             ctx.fillStyle = '#DC2626';
             ctx.arc(xFinalMark, yFinalMark, 4, 0, Math.PI * 2);
             ctx.fill();
 
-            // Distance Label ON Y-AXIS
+            // Total Distance Label ON Y-AXIS
             ctx.save();
             ctx.font = 'bold 12px Inter';
             ctx.textAlign = 'right';
             ctx.textBaseline = 'middle';
             const text = dTotal.toFixed(1);
             const textWidth = ctx.measureText(text).width;
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'; 
-            ctx.fillRect(margin.left - 15 - textWidth, yFinalMark - 8, textWidth + 10, 16);
+            
+            // Background box
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)'; 
+            ctx.shadowColor = 'rgba(0,0,0,0.1)';
+            ctx.shadowBlur = 4;
+            ctx.fillRect(margin.left - 18 - textWidth, yFinalMark - 10, textWidth + 14, 20);
+            
+            // Text
+            ctx.shadowBlur = 0;
             ctx.fillStyle = '#DC2626'; 
-            ctx.fillText(text, margin.left - 10, yFinalMark);
+            ctx.fillText(text, margin.left - 12, yFinalMark);
             ctx.restore();
 
             // 3. Actual Curve (Blue)
@@ -276,7 +229,7 @@
                 const xS = scaleX(tStart);
                 const xE = scaleX(tEnd);
                 const yS = scaleY(getDistance(tStart));
-                const yE = scaleY(getDistance(tEnd)); // Note: yE is vertically higher (smaller val) than yS because dEnd > dStart
+                const yE = scaleY(getDistance(tEnd)); 
 
                 // Fill Box
                 ctx.fillStyle = 'rgba(16, 185, 129, 0.1)'; 
@@ -292,59 +245,47 @@
                 ctx.fill();
                 ctx.stroke();
 
-                // Scanner Labels (Delta)
-                ctx.fillStyle = '#059669';
+                // Scanner Labels (Delta) inside box
+                ctx.fillStyle = '#059669'; // Green text
                 ctx.font = 'bold 10px Inter';
-                ctx.textAlign = 'center';
-                ctx.fillText("Δt=1h", (xS+xE)/2, yE - 25); // Moved up slightly to make room for velocity
                 ctx.textAlign = 'left';
-                ctx.fillText("Δd=100mi", xE + 4, (yS+yE)/2);
+                ctx.fillText("Δd=100", xE + 6, (yS+yE)/2);
 
                 // Train Dot
                 ctx.beginPath();
                 ctx.fillStyle = '#2563EB';
-                ctx.arc(xS, yS, 5, 0, Math.PI*2);
+                ctx.arc(xS, yS, 6, 0, Math.PI*2);
                 ctx.fill();
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 2;
+                ctx.stroke();
 
-                // UPDATE INSTANT VELOCITY ON GRAPH
+                // --- DYNAMIC LABELS ---
                 const v = getVelocity(tStart);
-                
+                const centerX = (xS + xE) / 2;
+
+                // A. Instant Velocity (TOP, Blue)
                 ctx.save();
-                ctx.fillStyle = '#2563EB'; // Blue to match velocity
-                ctx.font = 'bold 12px Inter';
+                ctx.fillStyle = '#2563EB'; 
+                ctx.font = 'bold 13px Inter';
                 ctx.textAlign = 'center';
-                // Place above the box (yE is the top edge)
-                ctx.fillText(`v = ${v.toFixed(0)} mph`, (xS+xE)/2, yE - 10);
+                ctx.fillText(`v = ${v.toFixed(0)} mph`, centerX, yE - 12); // yE is top edge visually
                 ctx.restore();
 
-                instSpeedDisplay.innerText = v.toFixed(0);
-            }
-
-            // 5. Update DOM Logic
-            const avgSpeed = dTotal / tTotal;
-            avgSpeedDisplay.innerText = avgSpeed.toFixed(1);
-            
-            // Logic Check
-            if (Math.abs(sliderValue) > 0) {
-                ansA.innerText = "NO";
-                ansA.className = "text-sm font-bold bg-red-100 text-red-600 px-3 py-1 rounded";
-                ansB.innerText = "NO";
-                ansB.className = "text-sm font-bold bg-red-100 text-red-600 px-3 py-1 rounded";
-                avgSpeedDisplay.className = "text-red-600";
-            } else {
-                ansA.innerText = "YES";
-                ansA.className = "text-sm font-bold bg-green-100 text-green-600 px-3 py-1 rounded";
-                ansB.innerText = "YES";
-                ansB.className = "text-sm font-bold bg-green-100 text-green-600 px-3 py-1 rounded";
-                avgSpeedDisplay.className = "text-slate-900";
+                // B. Interval Average (BOTTOM, Red)
+                ctx.save();
+                ctx.fillStyle = '#DC2626'; // Red
+                ctx.font = 'bold 13px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText(`Interval Avg: 100 mph`, centerX, yS + 20); // yS is bottom edge visually
+                ctx.restore();
             }
         }
 
         function loop() {
-            if (isScannerAnimating) {
-                scannerT += 0.005;
-                if (scannerT > 4.5) scannerT = 0;
-            }
+            scannerT += 0.005;
+            if (scannerT > 4.5) scannerT = 0;
+            
             draw();
             requestAnimationFrame(loop);
         }
@@ -352,11 +293,6 @@
         varianceSlider.addEventListener('input', (e) => {
             sliderValue = parseFloat(e.target.value);
             varianceVal.innerText = Math.abs(sliderValue) + "%";
-        });
-
-        toggleBtn.addEventListener('click', () => {
-            isScannerAnimating = !isScannerAnimating;
-            toggleBtn.innerText = isScannerAnimating ? "Pause" : "Resume";
         });
 
         loop();
